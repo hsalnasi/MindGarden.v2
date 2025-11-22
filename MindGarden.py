@@ -163,11 +163,13 @@ class PlantTask(Task):
         self.update_status("ignored")
 
 class DifficultyTask(PlantTask):
-    def __init__(self, task_id, title, difficulty):
+    def __init__(self, task_id, title, difficulty, mood):
         super().__init__(task_id, title)
         self.difficulty = difficulty
+        self.mood = mood
         self.growth_speed = {"Easy": 2, "Medium": 1, "Hard": 0.5}
         self.completion_reward_message = ""
+        self.speed_hard = 0
 
     def grow_based_on_difficulty(self):
         self.speed_counter = 0 # -> for Hard . only jumps when the counter reaches 2 attempts
@@ -179,13 +181,46 @@ class DifficultyTask(PlantTask):
         elif speed == 1: # if it is medium , then grow only once
             super().grow()
         else:
-            self.speed_counter += 1
+            self.speed_hard += 1
             if self.speed_counter >= 2:
                 super().grow()
-                self.speed_counter = 0
+
 
         self.update_status("in progress")
-    def mark_completed(self, mood):
+
+    def mark_completed(self):
+        self.status = "completed"
+        self.plant_state = "Blooming"
+        self.last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        if self.difficulty == "Easy":
+            self.completion_reward_message =  "Great job! 🌱 You finished an easy task!"
+        elif self.difficulty == "Medium":
+            self.completion_reward_message =  "Nice work! 🌿 You completed a medium task!"
+        else:
+            self.completion_reward_message =  "Amazing! 🌳 You finished a hard task!"
+        return self.completion_reward_message
+
+    def to_csv_row(self):
+        return {
+        "task_id": self.task_id,
+        "title": self.title,
+        "difficulty": self.difficulty,
+        "status": self.status,
+        "plant_state": self.plant_state,
+        "mood": self.mood,
+        "created_at": self.created_at,
+        "last_updated": self.last_updated
+        }
+
+
+task  = DifficultyTask("1", "Finish Math", "Hard", "Focus")
+print(task.get_summary())
+print(task.grow_based_on_difficulty())
+print(task.mark_completed())
+print(task.get_summary())
+
+
 
 
 
