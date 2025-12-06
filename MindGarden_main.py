@@ -85,7 +85,7 @@ class DifficultyTask(PlantTask):
 
     # Getter . Will be used in GUI as a loading bar or we will see ... :*)/Haifa
     def get_growth_progress(self):
-        needed = self.growth_threshold[self.difficulty]
+        needed = self.growth_speed[self.difficulty]
         return self._growth_progress, needed
 
     def grow_based_on_difficulty(self):
@@ -179,6 +179,7 @@ class TaskManager:
         task = self.get_task_by_id(task_id)
         task.grow_based_on_difficulty()
         print(f"Task ID {task_id} updated: plant state = {task.plant_state}")
+        return task
 
     def complete_task(self, task_id):
         #mark as completed and return a reward for the user
@@ -187,41 +188,7 @@ class TaskManager:
         print(reward)
         return reward
 
-    def save_tasks_to_file(self, filename = "plant_tasks.csv"):
-        #saving tasks to file
-        with open(filename, "w") as file:
-            for t in self.__tasks:
-                for value in [t.task_id, t.title, t.difficulty, t.status,
-                              t.plant_state, t.mood, t.created_at,t.last_updated]:
-                    file.write(f"{value}\n")
-                file.write("\n") # to create a new line between each task
-        print(f"Tasks saved to {filename} successfully.")
-
-    def load_tasks_from_file(self, filename = "plant_tasks.csv"):
-        try:
-            with open(filename, "r") as file: #reading tasks from a file
-                reader = csv.DictReader(file) # organize the file into rows and columns
-                self.__tasks = []
-                for row in reader:
-                    task = DifficultyTask(int(row["task id"]), row["title"], row["difficulty"], row.get("mood", "happy"))
-                    task.status = row['status']
-                    task.plant_state = row ["plant state"]
-                    task._Task__created_at = row ['created at']
-                    task._Task__last_updated = row ['last update']
-                    self.__tasks.append(task)
-            #updating next_task_id
-            if self.__tasks:
-                self.__next_task_id = max(t.task_id for t in self.__tasks) + 1 # look for the maximum ID in tasks and increase it by 1 /Haifa
-            else:
-                self.__next_task_id = 1
-            print(f"{len(self.__tasks)} tasks loaded from {filename}.")
-
-        except FileNotFoundError:
-            #no file found, it's gonna make a new file with the starting point we used earlier
-            self.__tasks = []
-            self.__next_task_id = 1
-            print(f"no existing file found. Starting with an empty task list.")
-
+  
 
 # TESTU TESTU 
 print("=== Creating TaskManager ===")
@@ -242,8 +209,7 @@ tm.update_task_progress(2)
 print("\n=== Completing a Task ===")
 tm.complete_task(1)
 
-print("\n=== Saving Tasks ===")
-tm.save_tasks_to_file()
+
 
 
 

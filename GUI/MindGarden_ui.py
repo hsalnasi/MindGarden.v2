@@ -2,9 +2,11 @@ import csv
 from datetime import datetime
 import tkinter as tk
 from tkinter import ttk, messagebox
+import sys, os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-# 👇 adjust this line if your file is not named logic.py
 from MindGarden_main import TaskManager, DifficultyTask
+
 
 # If you defined TaskNotFoundError / other custom exceptions
 # in logic.py, you can import them too, e.g.:
@@ -204,14 +206,30 @@ class GardenCanvas(tk.Canvas):
                 tags=("plant", f"task_{task.task_id}")
             )
 
-        if state in ["Growing", "Blooming"]:
-            # Taller stem
+        if state == "Growing":
+        # Bigger stem
             self.create_rectangle(
-                x - 2, y - 25, x + 2, y - 10,
+                x - 4, y - 35, x + 4, y - 10,
                 fill=stem_color,
                 outline=stem_color,
                 tags=("plant", f"task_{task.task_id}")
             )
+
+    # More leaves (4 instead of 2)
+            self.create_oval(x - 20, y - 5, x - 5, y + 10, fill=stem_color, outline="", tags=("plant", f"task_{task.task_id}"))
+            self.create_oval(x + 5, y - 5, x + 20, y + 10, fill=stem_color, outline="", tags=("plant", f"task_{task.task_id}"))
+
+            self.create_oval(x - 15, y - 20, x - 3, y - 8, fill=stem_color, outline="", tags=("plant", f"task_{task.task_id}"))
+            self.create_oval(x + 3, y - 20, x + 15, y - 8, fill=stem_color, outline="", tags=("plant", f"task_{task.task_id}"))
+
+        # Tiny flower bud to hint it's close to blooming
+            self.create_oval(
+                x - 5, y - 45, x + 5, y - 35,
+                fill="#e1bee7",
+                outline="",
+                tags=("plant", f"task_{task.task_id}")
+            )
+
 
         if state == "Blooming":
             petal_color = "#ffb74d"
@@ -398,6 +416,8 @@ class MindGardenApp:
         title = self.title_entry.get()
         difficulty = self.difficulty_var.get()
         mood = self.mood_entry.get() or "Happy"
+       
+
 
         try:
             # Your TaskManager.create_task(title, difficulty, mood)
@@ -411,6 +431,9 @@ class MindGardenApp:
         except Exception as e:
             messagebox.showerror("Error", f"Unexpected error: {e}")
             self.set_status("Unexpected error while adding task.", error=True)
+        self.task_id_entry.delete(0, tk.END)
+        self.task_id_entry.insert(0, str(task.task_id))
+
 
     def on_update_task(self):
         try:
