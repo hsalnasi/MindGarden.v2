@@ -80,8 +80,8 @@ def load_tasks_from_csv(task_manager: TaskManager, filename="plant_tasks.csv"):
     except FileNotFoundError:
         new_tasks = []
 
-    # 👇 put the tasks into the existing TaskManager
-    # (using name-mangled private attributes WITHOUT changing the original class)
+    
+
     task_manager._TaskManager__tasks = new_tasks
     if new_tasks:
         task_manager._TaskManager__next_task_id = max(t.task_id for t in new_tasks) + 1
@@ -156,14 +156,48 @@ class GardenCanvas(tk.Canvas):
             y = margin_y + row * cell_h
             self.draw_plant(task, x, y)
 
+
+    def get_mood_color(self, mood, default_color):
+        mood_map = {
+            "Happy": "#81c784",
+            "Calm": "#4db6ac",
+            "Focused": "#64b5f6",
+            "Tired": "#a1887f",
+            "Stressed": "#ef5350",
+        }
+        if not mood:
+            return default_color
+        key = mood.strip().capitalize()
+        return mood_map.get(key, default_color)
+    
+    def on_click(self, event):
+        item = self.find_closest(event.x, event.y)
+        if not item:
+            return
+        tags = self.gettags(item)
+        for tag in tags:
+            if tag.startswith("task_"):
+                try:
+                    task_id = int(tag.split("_")[1])
+                    self.app.on_plant_clicked(task_id)
+                    return
+                except ValueError:
+                    pass
+
+
+
     def draw_plant(self, task, x, y):
-        # Color based on difficulty
+        # Color based on difficulty (for stem)
         if task.difficulty == "Easy":
             stem_color = "#66bb6a"
         elif task.difficulty == "Medium":
             stem_color = "#388e3c"
         else:  # Hard
             stem_color = "#1b5e20"
+
+        # Mood-based color (for leaves / flower)
+        mood = getattr(task, "mood", "Happy")
+        leaf_color = self.get_mood_color(mood, stem_color)
 
         # Soil
         self.create_oval(
@@ -192,22 +226,22 @@ class GardenCanvas(tk.Canvas):
             )
 
         if state in ["Sprout", "Growing", "Blooming"]:
-            # Leaves
+            # Leaves (use mood color)
             self.create_oval(
                 x - 15, y + 5, x - 3, y + 13,
-                fill=stem_color,
+                fill=leaf_color,
                 outline="",
                 tags=("plant", f"task_{task.task_id}")
             )
             self.create_oval(
                 x + 3, y + 5, x + 15, y + 13,
-                fill=stem_color,
+                fill=leaf_color,
                 outline="",
                 tags=("plant", f"task_{task.task_id}")
             )
 
         if state == "Growing":
-        # Bigger stem
+            # Bigger stem
             self.create_rectangle(
                 x - 4, y - 35, x + 4, y - 10,
                 fill=stem_color,
@@ -215,30 +249,39 @@ class GardenCanvas(tk.Canvas):
                 tags=("plant", f"task_{task.task_id}")
             )
 
-    # More leaves (4 instead of 2)
-            self.create_oval(x - 20, y - 5, x - 5, y + 10, fill=stem_color, outline="", tags=("plant", f"task_{task.task_id}"))
-            self.create_oval(x + 5, y - 5, x + 20, y + 10, fill=stem_color, outline="", tags=("plant", f"task_{task.task_id}"))
+            # More leaves (4 instead of 2) using mood color
+            self.create_oval(x - 20, y - 5, x - 5, y + 10,
+                            fill=leaf_color, outline="",
+                            tags=("plant", f"task_{task.task_id}"))
+            self.create_oval(x + 5, y - 5, x + 20, y + 10,
+                            fill=leaf_color, outline="",
+                            tags=("plant", f"task_{task.task_id}"))
 
-            self.create_oval(x - 15, y - 20, x - 3, y - 8, fill=stem_color, outline="", tags=("plant", f"task_{task.task_id}"))
-            self.create_oval(x + 3, y - 20, x + 15, y - 8, fill=stem_color, outline="", tags=("plant", f"task_{task.task_id}"))
+            self.create_oval(x - 15, y - 20, x - 3, y - 8,
+                            fill=leaf_color, outline="",
+                            tags=("plant", f"task_{task.task_id}"))
+            self.create_oval(x + 3, y - 20, x + 15, y - 8,
+                            fill=leaf_color, outline="",
+                            tags=("plant", f"task_{task.task_id}"))
 
-        # Tiny flower bud to hint it's close to blooming
+            # Tiny flower bud (also influenced by mood)
             self.create_oval(
                 x - 5, y - 45, x + 5, y - 35,
-                fill="#e1bee7",
+                fill=leaf_color,
                 outline="",
                 tags=("plant", f"task_{task.task_id}")
             )
 
-
         if state == "Blooming":
-            petal_color = "#ffb74d"
+            # Use mood color for petals instead of fixed orange
+            petal_color = leaf_color
             self.create_oval(
                 x - 10, y - 40, x + 10, y - 20,
                 fill=petal_color,
                 outline="",
                 tags=("plant", f"task_{task.task_id}")
             )
+            # Center of flower (keep yellow)
             self.create_oval(
                 x - 6, y - 36, x + 6, y - 24,
                 fill="#fdd835",
@@ -260,22 +303,6 @@ class GardenCanvas(tk.Canvas):
             font=("Arial", 8),
             tags=("plant", f"task_{task.task_id}")
         )
-
-    def on_click(self, event):
-        item = self.find_closest(event.x, event.y)
-        if not item:
-            return
-        tags = self.gettags(item)
-        task_id = None
-        for tag in tags:
-            if tag.startswith("task_"):
-                try:
-                    task_id = int(tag.split("_")[1])
-                    break
-                except ValueError:
-                    pass
-        if task_id is not None:
-            self.app.on_plant_clicked(task_id)
 
 
 # ---------------------------------------------------------
@@ -363,10 +390,44 @@ class MindGardenApp:
         )
         self.difficulty_combo.grid(row=2, column=1, pady=2)
 
-        tk.Label(self.left_frame, text="Mood (optional):").grid(row=3, column=0, sticky="w")
-        self.mood_entry = tk.Entry(self.left_frame, width=25)
-        self.mood_entry.insert(0, "Happy")
-        self.mood_entry.grid(row=3, column=1, pady=2)
+        tk.Label(self.left_frame, text="Mood:").grid(row=3, column=0, sticky="nw")
+
+        # 🔘 Mood as radio buttons instead of free text
+        self.mood_var = tk.StringVar(value="Happy")
+
+        moods = ["Happy", "Calm", "Focused", "Tired", "Stressed"]
+        for i, m in enumerate(moods):
+            rb = tk.Radiobutton(
+                self.left_frame,
+                text=m,
+                variable=self.mood_var,
+                value=m,
+                anchor="w",
+                padx=0
+            )
+            rb.grid(row=3 + i, column=1, sticky="w")
+
+        # shift the rest of the rows down a bit (IDs + buttons)
+        start_row = 3 + len(moods)
+
+        tk.Label(self.left_frame, text="Task ID for update/complete:").grid(
+            row=start_row, column=0, columnspan=2, sticky="w", pady=(10, 0)
+        )
+        self.task_id_entry = tk.Entry(self.left_frame, width=10)
+        self.task_id_entry.grid(row=start_row + 1, column=0, pady=2, sticky="w")
+
+        self.add_btn = tk.Button(self.left_frame, text="Add Task", command=self.on_add_task)
+        self.add_btn.grid(row=start_row + 2, column=0, columnspan=2, pady=5, sticky="ew")
+
+        self.update_btn = tk.Button(self.left_frame, text="Update Progress", command=self.on_update_task)
+        self.update_btn.grid(row=start_row + 3, column=0, columnspan=2, pady=5, sticky="ew")
+
+        self.complete_btn = tk.Button(self.left_frame, text="Mark Completed", command=self.on_complete_task)
+        self.complete_btn.grid(row=start_row + 4, column=0, columnspan=2, pady=5, sticky="ew")
+
+        self.status_label = tk.Label(self.left_frame, text="Ready.", fg="gray")
+        self.status_label.grid(row=start_row + 5, column=0, columnspan=2, pady=(10, 0), sticky="w")
+
 
         tk.Label(self.left_frame, text="Task ID for update/complete:").grid(
             row=4, column=0, columnspan=2, sticky="w", pady=(10, 0)
@@ -415,9 +476,7 @@ class MindGardenApp:
     def on_add_task(self):
         title = self.title_entry.get()
         difficulty = self.difficulty_var.get()
-        mood = self.mood_entry.get() or "Happy"
-       
-
+        mood = self.mood_var.get() or "Happy"
 
         try:
             # Your TaskManager.create_task(title, difficulty, mood)
@@ -428,9 +487,13 @@ class MindGardenApp:
         except ValueError as e:
             messagebox.showerror("Input Error", str(e))
             self.set_status(str(e), error=True)
+            return
         except Exception as e:
             messagebox.showerror("Error", f"Unexpected error: {e}")
             self.set_status("Unexpected error while adding task.", error=True)
+            return
+
+        # Optionally show last created task ID in the field
         self.task_id_entry.delete(0, tk.END)
         self.task_id_entry.insert(0, str(task.task_id))
 
