@@ -80,40 +80,32 @@ def load_image(relative_path, size=None, tint=None):
     return CTkImage(light_image=img, dark_image=img, size=size)
 
 
-
-def is_night_time():
-    hour = datetime.now().hour
-    return hour >= 18 or hour < 6
-
 # ------------------------------------------------------
-# Main App (manages Frame switching)
+# Main App 
 # ------------------------------------------------------
 class MindGardenApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-
+        # The app's main configurations
         self.title("MindGarden – Productivity Garden")
         self.geometry("1100x650")
         #self.resizable(False, False)
         self.minsize(850,650)
         self.maxsize(850, 650)
    
-        self.after(500, lambda: print("Window size:", self.winfo_width(), "x", self.winfo_height()))
-
-
-        # Background music/sound system
+        # Background music/sound system .. pygame
         pygame.mixer.init()
         self.night_sound = None
 
-        # Task manager from your existing logic file
+        # Task manager from main
         self.manager = TaskManager()
 
         self.user_mood = "Happy"   # default
 
-        # Frame container
+        # frame1
         self.current_frame = None
 
-        # Start on landing page
+        # start on landing page
         self.switch_frame(LandingPage)
 
     def play_sound(self, filename):
@@ -148,7 +140,7 @@ class LandingPage(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
 
-        # Load background
+        # loading the bg image
         bg_path = "assets/bg_landing.png"
         self.bg_image = load_image(bg_path, size=(1100, 650))
 
@@ -199,7 +191,7 @@ class LandingPage(ctk.CTkFrame):
         )
         continue_btn.place(relx=0.5, rely=0.75, anchor="center")
 
-    # Typing animation
+    # 
     def animate_text(self):
         if self.animate_text_index <= len(self.full_text):
             self.text_label.configure(text=self.full_text[:self.animate_text_index])
@@ -241,7 +233,7 @@ class GardenPage(ctk.CTkFrame):
         self.bg_label = ctk.CTkLabel(self, image=self.bg_image, text="")
         self.bg_label.place(relwidth=1, relheight=1)
 
-        self.night_mode = is_night_time()
+    
 
 
         if self.master.night_sound is None:
