@@ -43,7 +43,7 @@ class Task:
 # -----------------------------------------------------
 class PlantTask(Task):
     # this is a class variable. in order to access it we use : class.varname (without self) /Haifa
-    PLANT_STATES = ["Seed", "Sprout", "Growing", "Blooming", "Wilting"]
+    PLANT_STATES = ["Seed", "Sprout", "Growing", "Blooming"]
 
     def __init__(self, task_id, title):
         super().__init__(task_id, title)    # call the parent constructor
@@ -68,10 +68,7 @@ class PlantTask(Task):
         base_summary = super().get_summary()
         return f"{base_summary} | Plant state: {self.plant_state}"
 
-    def mark_ignored(self):
-        """Turn plant state to wilting if user stops working."""
-        self.plant_state = "Wilting" # updating the plant state
-        self.update_status("ignored") # updating the task status
+   
 
 class DifficultyTask(PlantTask):
     def __init__(self, task_id, title, difficulty, mood="Happy"):
@@ -79,13 +76,13 @@ class DifficultyTask(PlantTask):
         self.difficulty = difficulty # ---> Easy, Medium, Hard .
         self.mood = mood # defalut is "Happy" :> /Haifa
         self.growth_speed = {"Easy": 2, "Medium": 1, "Hard": 0.5}
-        self.completion_reward_message = ""
+
         self._growth_progress = 0
 
     # Getter . Will be used in GUI as a loading bar or we will see ... :*)/Haifa
-    def get_growth_progress(self):
-        needed = self.growth_speed[self.difficulty]
-        return self._growth_progress, needed
+    #def get_growth_progress(self):
+     #   needed = self.growth_speed[self.difficulty]
+      #  return self._growth_progress, needed
 
     def grow_based_on_difficulty(self):
         self._growth_progress += 1
@@ -101,16 +98,12 @@ class DifficultyTask(PlantTask):
     def mark_completed(self):
         self.status = "completed"
         self.plant_state = "Blooming"
-        return f"Great job! 🌱 You finished an {self.difficulty.lower()} task!"
-
-
         if self.difficulty == "Easy":
-            self.completion_reward_message =  "Great job! 🌱 You finished an easy task!"
+            return "Great job! 🌱 You finished an easy task!"
         elif self.difficulty == "Medium":
-            self.completion_reward_message =  "Nice work! 🌿 You completed a medium task!"
+            return "Nice work! 🌿 You completed a medium task!"
         else:
-            self.completion_reward_message =  "Amazing! 🌳 You finished a hard task!"
-        return self.completion_reward_message
+            return "Amazing! 🌳 You finished a hard task!"
 
     # Ovverriden method . it still functions the same but with more columns /Haifa
     def to_csv_row(self):
@@ -195,9 +188,6 @@ class TaskManager:
                 return True
         raise ValueError(f"Task with ID {task_id} not found.")
 
-
-  
-
 # TESTU TESTU 
 print("=== Creating TaskManager ===")
 tm = TaskManager()
@@ -216,13 +206,3 @@ tm.update_task_progress(2)
 
 print("\n=== Completing a Task ===")
 tm.complete_task(1)
-
-
-
-
-
-
-
-
-
-

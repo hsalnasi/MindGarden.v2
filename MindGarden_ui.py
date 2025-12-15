@@ -11,9 +11,7 @@ from datetime import datetime
 # ------------------------------
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("green")
-# ------------------------------------------------------
-# Earthy UI Theme
-# ------------------------------------------------------
+
 EARTH = {
     "bg": "#F4EFE6",
     "panel": "#E6E1D6",
