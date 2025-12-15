@@ -165,7 +165,7 @@ class LandingPage(ctk.CTkFrame):
         moods = ["Happy", "Calm", "Focused", "Tired", "Stressed"]
 
         self.mood_var = ctk.StringVar(value="Happy")
-
+        # a loop to make the same widget(radiobutton) for every mood at once :) 
         for m in moods:
             btn = ctk.CTkRadioButton(
                 mood_frame,
@@ -200,14 +200,10 @@ class LandingPage(ctk.CTkFrame):
             self.after(35, self.animate_text)
 
     def go_to_garden(self):
-        self.master.play_sound("click.wav")
-        self.master.user_mood = self.mood_var.get()
+        self.master.play_sound("click.wav") # clckck sound :P
+        self.master.user_mood = self.mood_var.get() # based on mood
         self.master.switch_frame(GardenPage)
 
-
-# ------------------------------------------------------
-# Garden Page — drag & drop tasks + plant visualization
-# ------------------------------------------------------
 class GardenPage(ctk.CTkFrame):
 
   
@@ -232,9 +228,6 @@ class GardenPage(ctk.CTkFrame):
         self.bg_image = load_image("assets/bg_garden.png", size=(1100, 650))
         self.bg_label = ctk.CTkLabel(self, image=self.bg_image, text="")
         self.bg_label.place(relwidth=1, relheight=1)
-
-    
-
 
         if self.master.night_sound is None:
             self.master.night_sound = pygame.mixer.Sound("assets/garden_sound.mp3")
@@ -264,8 +257,6 @@ class GardenPage(ctk.CTkFrame):
         )
         self.page_scroll.pack(fill="both", expand=True, padx=20, pady=10)
        
-
-
         # Actual content holder
         content = ctk.CTkFrame(self.page_scroll, fg_color="transparent")
         content.pack(fill="both", expand=True)
@@ -293,10 +284,6 @@ class GardenPage(ctk.CTkFrame):
 
         print("[DEBUG] GardenPage initialization finished")
 
-
-    # -------------------------------------
-    # LEFT PANEL – Create new task
-    # -------------------------------------
     def create_task_panel(self, parent):
         panel = ctk.CTkFrame(parent, fg_color=EARTH["panel"])
 
@@ -335,7 +322,7 @@ class GardenPage(ctk.CTkFrame):
             text="",
             width=350,
             height=350,
-            fg_color="transparent"      # important to avoid grey box around plant
+            fg_color="transparent"      # to get rid of greyness around the plant
         )
         self.plant_label.pack(pady=20)
 
@@ -357,12 +344,10 @@ class GardenPage(ctk.CTkFrame):
         self.task_list.pack(pady=10)
 
 
-
-    # -------------------------------------
     def refresh_plant(self):
         manager = self.master.manager
 
-        task = None  # IMPORTANT
+        task = None  # IMPORTANT!!!! / Haifa
 
         if self.selected_task_id is None:
             tasks = manager.get_all_tasks()
@@ -450,7 +435,7 @@ class GardenPage(ctk.CTkFrame):
 
     def show_completion_popup(self, task):
         popup = ctk.CTkToplevel(self)
-        self.master.play_sound("completed.wav")
+        self.master.play_sound("completed.mp3")
         popup.title("Task Completed 🌸")
         popup.geometry("460x360")
         popup.resizable(False, False)
