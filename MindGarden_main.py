@@ -99,9 +99,10 @@ class DifficultyTask(PlantTask):
         self.update_status("in progress")
 
     def mark_completed(self):
-        self.status = "completed" # task status 
-        self.plant_state = "Blooming" # plant status
-        self.last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.status = "completed"
+        self.plant_state = "Blooming"
+        return f"Great job! 🌱 You finished an {self.difficulty.lower()} task!"
+
 
         if self.difficulty == "Easy":
             self.completion_reward_message =  "Great job! 🌱 You finished an easy task!"
@@ -186,6 +187,14 @@ class TaskManager:
         reward = task.mark_completed()
         print(reward)
         return reward
+    
+    def delete_task(self, task_id):
+        for i, task in enumerate(self.__tasks):
+            if task.task_id == task_id:
+                del self.__tasks[i]
+                return True
+        raise ValueError(f"Task with ID {task_id} not found.")
+
 
   
 
