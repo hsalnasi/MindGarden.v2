@@ -14,18 +14,18 @@ ctk.set_default_color_theme("green")
 
 EARTH = {
     "bg": "#F4EFE6",
-    "panel": "#E6E1D6",
+    "panel": "#FBFAF7",
     "card": "#FBFAF7",
     "border": "#C8BFAE",
     "text": "#3E3A32"
 }
 
 MOODS = {
-    "Happy":     {"accent": "#F4A261", "hover": "#E76F51"},
-    "Calm":      {"accent": "#84A98C", "hover": "#6B9080"},
-    "Focused":   {"accent": "#52796F", "hover": "#354F52"},
-    "Tired":     {"accent": "#BC6C25", "hover": "#99582A"},
-    "Stressed":  {"accent": "#9D4EDD", "hover": "#7B2CBF"},
+    "Happy":     {"accent": "#ebc734", "hover": "#E76F51"},
+    "Calm":      {"accent": "#4665c3", "hover": "#6B9080"},
+    "Focused":   {"accent": "#d392d5", "hover": "#354F52"},
+    "Tired":     {"accent": "#8b6d5e", "hover": "#99582A"},
+    "Stressed":  {"accent": "#464e5c", "hover": "#7B2CBF"},
 }
 
 
@@ -149,7 +149,7 @@ class LandingPage(ctk.CTkFrame):
             self.configure(fg_color="#f3f3f3") 
 
         # Animated welcome text
-        self.text_label = ctk.CTkLabel(self, text="", font=FONT["title_xl"])
+        self.text_label = ctk.CTkLabel(self, text="", font=FONT["title_xl"], fg_color="transparent")
         self.text_label.place(relx=0.5, rely=0.15, anchor="center")
 
         self.full_text = "Welcome to MindGarden!\nHow are you feeling today?"
@@ -157,7 +157,7 @@ class LandingPage(ctk.CTkFrame):
         self.animate_text()
 
         # Mood buttons
-        mood_frame = ctk.CTkFrame(self, fg_color="#ffffff")  # or "transparent"
+        mood_frame = ctk.CTkFrame(self, fg_color="#db9567",corner_radius=1)  # or "transparent"
         mood_frame.place(relx=0.5, rely=0.45, anchor="center")
 
         moods = ["Happy", "Calm", "Focused", "Tired", "Stressed"]
@@ -192,7 +192,7 @@ class LandingPage(ctk.CTkFrame):
     # 
     def animate_text(self):
         if self.animate_text_index <= len(self.full_text):
-            self.text_label.configure(text=self.full_text[:self.animate_text_index])
+            self.text_label.configure(text=self.full_text[:self.animate_text_index], fg_color="#e1a075")
             self.animate_text_index += 1
             #recurrsive call ::) /HAIFA
             self.after(35, self.animate_text)
@@ -240,7 +240,7 @@ class GardenPage(ctk.CTkFrame):
 
         ctk.CTkLabel(
             header,
-            text=f"Your Garden ({mood})",
+            text=f"Your Garden🌿",
             font=FONT["title"],
             text_color="#ffffff"
         ).pack(pady=10)
@@ -260,7 +260,7 @@ class GardenPage(ctk.CTkFrame):
         content.pack(fill="both", expand=True)
         title = ctk.CTkLabel(
             content,
-            text=f"Your Garden ({master.user_mood})",
+            text=f"{master.user_mood}",
             font=("Arial", 28, "bold")
         )
         title.pack(pady=15)
