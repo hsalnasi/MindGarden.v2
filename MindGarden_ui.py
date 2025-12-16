@@ -627,10 +627,6 @@ class GardenPage(ctk.CTkFrame):
         self.refresh_tasks()
         self.refresh_plant()
 
-
-
-
-
     # -------------------------------
 # TIME-BASED GROWTH SYSTEM
 # -------------------------------
