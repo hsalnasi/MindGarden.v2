@@ -1,5 +1,4 @@
 from datetime import datetime
-import csv
 # -----------------------------------------------------
 # Custom Exception
 # -----------------------------------------------------
@@ -26,17 +25,6 @@ class Task:
     def get_summary(self):
         """Return simple summary of the task."""
         return f"[Task {self.task_id}] {self.title} - Status: {self.status}"
-
-    def to_dict(self):
-        """Convert task to dictionary (useful for saving to csv)/ Haifa"""
-        return {
-            "task_id": self.task_id,
-            "title": self.title,
-            "status": self.status,
-            "created_at": self.created_at,
-            "last_updated": self.last_updated
-        }
-
 
 # -----------------------------------------------------
 # Child Class: PlantTask (Inherits from Task)
@@ -79,11 +67,6 @@ class DifficultyTask(PlantTask):
 
         self._growth_progress = 0
 
-    # Getter . Will be used in GUI as a loading bar or we will see ... :*)/Haifa
-    #def get_growth_progress(self):
-     #   needed = self.growth_speed[self.difficulty]
-      #  return self._growth_progress, needed
-
     def grow_based_on_difficulty(self):
         self._growth_progress += 1
         speed = self.growth_speed[self.difficulty] # only takes the speed number needed for the plant to grow .
@@ -117,14 +100,6 @@ class DifficultyTask(PlantTask):
         "created_at": self.created_at,
         "last_updated": self.last_updated
         }
-
-# TESTUUUU 
-task  = DifficultyTask("1", "Finish Math", "Hard", "Focus")
-print(task.get_summary())
-print(task.grow_based_on_difficulty())
-print(task.mark_completed())
-print(task.get_summary())
-
 # -----------------------------------------------------
 # Task Manager Class
 # a task has a title, difficulty, mood, status, plant state, created at, last updated and ofc and ID 
@@ -134,9 +109,6 @@ class TaskManager:
     def __init__(self, max_id = 0):
         self.__tasks = []
         self.__next_task_id = max_id + 1
-    #getters
-    def get_next_task_id(self):
-        return self.__next_task_id #return next task id
 
     def get_all_tasks(self):
         return self.__tasks #return all tasks
@@ -167,13 +139,6 @@ class TaskManager:
 
         raise TaskNotFoundError("Task not found.")
 
-    def update_task_progress(self,task_id):
-        #get task and update its plant state
-        task = self.get_task_by_id(task_id)
-        task.grow_based_on_difficulty()
-        print(f"Task ID {task_id} updated: plant state = {task.plant_state}")
-        return task
-
     def complete_task(self, task_id):
         #mark as completed and return a reward for the user
         task = self.get_task_by_id(task_id)
@@ -188,21 +153,28 @@ class TaskManager:
                 return True
         raise ValueError(f"Task with ID {task_id} not found.")
 
-# TESTU TESTU 
-print("=== Creating TaskManager ===")
-tm = TaskManager()
+# TESTU TESTU \
+if __name__ == "__main__":
 
-print("\n=== Creating Tasks ===")
-t1 = tm.create_task("Study Python", "Easy")
-t2 = tm.create_task("Finish Project", "Hard", mood="Tired")
+    task  = DifficultyTask("1", "Finish Math", "Hard", "Focus")
+    print(task.get_summary())
+    print(task.grow_based_on_difficulty())
+    print(task.mark_completed())
+    print(task.get_summary())
+    print("=== Creating TaskManager ===")
+    tm = TaskManager()
 
-print("\n=== Showing all tasks ===")
-for task in tm.get_all_tasks():
-    print(task.task_id, task.title, task.difficulty, task.plant_state)
+    print("\n=== Creating Tasks ===")
+    t1 = tm.create_task("Study Python", "Easy")
+    t2 = tm.create_task("Finish Project", "Hard", mood="Tired")
 
-print("\n=== Updating Progress ===")
-tm.update_task_progress(1)
-tm.update_task_progress(2)
+    print("\n=== Showing all tasks ===")
+    for task in tm.get_all_tasks():
+        print(task.task_id, task.title, task.difficulty, task.plant_state)
 
-print("\n=== Completing a Task ===")
-tm.complete_task(1)
+    print("\n=== Updating Progress ===")
+    tm.update_task_progress(1)
+    tm.update_task_progress(2)
+
+    print("\n=== Completing a Task ===")
+    tm.complete_task(1)

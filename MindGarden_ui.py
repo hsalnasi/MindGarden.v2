@@ -3,11 +3,12 @@ from customtkinter import CTkImage
 from PIL import Image
 import os
 import pygame
-from MindGarden_main import TaskManager, DifficultyTask
+from MindGarden_main import TaskManager
 from datetime import datetime
+import csv
 
 # ------------------------------
-# App Configuration
+# App Configuration - sizes , fonts and all
 # ------------------------------
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("green")
@@ -37,13 +38,6 @@ LEAF_TINT = {
     "Stressed": (220, 200, 230)
 }
 
-GROWTH_SOUNDS = {
-    "Seed": "grow_seed.wav",
-    "Sprout": "grow_sprout.wav",
-    "Growing": "grow_growing.wav",
-    "Blooming": "grow_bloom.wav",
-}
-
 
 FONT = {
     "title_xl": ("Inter", 32, "bold"),
@@ -53,10 +47,8 @@ FONT = {
     "small": ("Inter", 12),
     "button": ("Inter", 14, "bold"),
 }
-
-
 # ------------------------------------------------------
-# Helper for loading images safely
+# Helper for loading images without crashing
 # ------------------------------------------------------
 def load_image(relative_path, size=None, tint=None):
     base = os.path.dirname(os.path.abspath(__file__))
@@ -76,36 +68,29 @@ def load_image(relative_path, size=None, tint=None):
         img = img.resize(size, Image.Resampling.LANCZOS)
 
     return CTkImage(light_image=img, dark_image=img, size=size)
-
-
-# ------------------------------------------------------
-# Main App 
-# ------------------------------------------------------
+# manger or main frame here
 class MindGardenApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        # The app's main configurations
+        # The app's main configurations (window size)
         self.title("MindGarden – Productivity Garden")
         self.geometry("1100x650")
         #self.resizable(False, False)
         self.minsize(850,650)
         self.maxsize(850, 650)
    
-        # Background music/sound system .. pygame
+        # Background music/sound system .. pygame. once the mixer is initilized we can play sounds
         pygame.mixer.init()
-        self.night_sound = None
-
+        
         # Task manager from main
         self.manager = TaskManager()
-
         self.user_mood = "Happy"   # default
-
-        # frame1
+        # frame1 - or the current page we're in:
         self.current_frame = None
 
-        # start on landing page
+        # start on landing page(switch frame is defined after)
         self.switch_frame(LandingPage)
-
+    #joining paths to avoid import errors 
     def play_sound(self, filename):
         base = os.path.dirname(os.path.abspath(__file__))
         path = os.path.join(base, "assets", filename)
@@ -128,8 +113,6 @@ class MindGardenApp(ctk.CTk):
 
         self.current_frame = frame_class(self)
         self.current_frame.pack(fill="both", expand=True)
-
-
 # ------------------------------------------------------
 # Landing Page (mood selection + welcome animation) /haifa
 # ------------------------------------------------------
@@ -157,7 +140,7 @@ class LandingPage(ctk.CTkFrame):
         self.animate_text()
 
         # Mood buttons
-        mood_frame = ctk.CTkFrame(self, fg_color="#db9567",corner_radius=1)  # or "transparent"
+        mood_frame = ctk.CTkFrame(self, fg_color="#db9567",corner_radius=5)  # or "transparent"
         mood_frame.place(relx=0.5, rely=0.45, anchor="center")
 
         moods = ["Happy", "Calm", "Focused", "Tired", "Stressed"]
@@ -189,7 +172,7 @@ class LandingPage(ctk.CTkFrame):
         )
         continue_btn.place(relx=0.5, rely=0.75, anchor="center")
 
-    # 
+    #functions  
     def animate_text(self):
         if self.animate_text_index <= len(self.full_text):
             self.text_label.configure(text=self.full_text[:self.animate_text_index], fg_color="#e1a075")
@@ -203,34 +186,13 @@ class LandingPage(ctk.CTkFrame):
         self.master.switch_frame(GardenPage)
 
 class GardenPage(ctk.CTkFrame):
-
-  
     def __init__(self, master):
         super().__init__(master)
         self.selected_task_id = None
-        print("[DEBUG] GardenPage started")
-        # -------------------------------
-        # Plant images (loaded once)
-        # -------------------------------
-        self.images = {
-            "Seed": load_image("assets/plant_seed.png", (240, 240)),
-            "Sprout": load_image("assets/plant_sprout.png", (260, 260)),
-            "Growing": load_image("assets/plant_growing.png", (300, 300)),
-            "Blooming": load_image("assets/plant_blooming.png", (320, 320)),
-            "Wilting": load_image("assets/plant_wilt.png", (260, 260)),
-        }
-        print("[DEBUG] Plant images loaded")
-
-        # Background
         # Background image
         self.bg_image = load_image("assets/bg_garden.png", size=(1100, 650))
         self.bg_label = ctk.CTkLabel(self, image=self.bg_image, text="")
         self.bg_label.place(relwidth=1, relheight=1)
-
-        if self.master.night_sound is None:
-            self.master.night_sound = pygame.mixer.Sound("assets/garden_sound.mp3")
-            self.master.night_sound.set_volume(0.3)
-            self.master.night_sound.play(-1)
 
         mood = master.user_mood
         accent = MOODS[mood]["accent"]
@@ -244,8 +206,6 @@ class GardenPage(ctk.CTkFrame):
             font=FONT["title"],
             text_color="#ffffff"
         ).pack(pady=10)
-
-        print("[DEBUG] Title created")
 
         self.page_scroll = ctk.CTkScrollableFrame(
             self,
@@ -271,16 +231,11 @@ class GardenPage(ctk.CTkFrame):
         layout.grid_columnconfigure(0, weight=1)
         layout.grid_columnconfigure(1, weight=4)
 
-
         # Left side – Add Task Panel
         self.create_task_panel(layout)
-        print("[DEBUG] Left panel created")
 
         # Right side – Plant + Board
         self.create_visual_garden(layout)
-        print("[DEBUG] Right panel created")
-
-        print("[DEBUG] GardenPage initialization finished")
 
     def create_task_panel(self, parent):
         panel = ctk.CTkFrame(parent, fg_color=EARTH["panel"])
@@ -300,14 +255,9 @@ class GardenPage(ctk.CTkFrame):
             placeholder_text="Estimated time (minutes)"
         )
         self.time_entry.pack(pady=5, fill="x")
-
-
         add_btn = ctk.CTkButton(panel, text="Add Task",font=FONT["button"], command=self.add_task)
         add_btn.pack(pady=15)
 
-    # -------------------------------------
-    # RIGHT PANEL – Plant visualization + tasks
-    # -------------------------------------
     def create_visual_garden(self, parent):
 
     # plant images...
@@ -340,15 +290,38 @@ class GardenPage(ctk.CTkFrame):
         )
 
         self.task_list.pack(pady=10)
+    def add_task(self):
+        title = self.title_entry.get().strip()
+        difficulty = self.diff_var.get()
+        mood = self.master.user_mood
 
+        if not title:
+            return
+
+        task = self.master.manager.create_task(title, difficulty, mood)
+        raw_time = self.time_entry.get().strip()
+
+        if raw_time.isdigit() and int(raw_time) > 0:
+            task.estimated_minutes = int(raw_time)
+        else:
+            task.estimated_minutes = 25  # fallback default
+
+        task.estimated_seconds = task.estimated_minutes * 60
+        task.elapsed_seconds = 0
+        task.focus_running = False
+
+        self.title_entry.delete(0, "end")
+        self.time_entry.delete(0, "end")
+        self.start_focus(task)
+
+        self.refresh_tasks()
+        self.refresh_plant()
 
     def refresh_plant(self):
-        manager = self.master.manager
-
         task = None  # IMPORTANT!!!! / Haifa
 
         if self.selected_task_id is None:
-            tasks = manager.get_all_tasks()
+            tasks = self.master.manager.get_all_tasks()
             if not tasks:
                 stage = "Seed"
             else:
@@ -361,11 +334,7 @@ class GardenPage(ctk.CTkFrame):
         if task and task.status == "completed":
             stage = "Blooming"
 
-        img = self.images.get(stage)
-        if img:
-            self.animate_plant_growth(stage)
-        else:
-            print("[ERROR] Missing plant stage image:", stage)
+        self.animate_plant_growth(stage)
 
     def _create_active_task_card(self, task):
         card = ctk.CTkFrame(self.task_list, fg_color="#ffffff", corner_radius=12)
@@ -429,7 +398,6 @@ class GardenPage(ctk.CTkFrame):
         task = self.master.manager.get_task_by_id(task_id)
         self.start_focus(task)
         self.refresh_plant()
-
 
     def show_completion_popup(self, task):
         popup = ctk.CTkToplevel(self)
@@ -522,12 +490,7 @@ class GardenPage(ctk.CTkFrame):
             command=popup.destroy
         ).pack(side="right", padx=8)
 
-
-
     def save_reflection(self, task, reflection_text):
-        from datetime import datetime
-        import csv
-
         path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
             "task_reflections.csv"
@@ -557,10 +520,6 @@ class GardenPage(ctk.CTkFrame):
                 datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             ])
 
-
-        
-
-    # -------------------------------------
     def refresh_tasks(self):
         for widget in self.task_list.winfo_children():
             widget.destroy()
@@ -594,42 +553,7 @@ class GardenPage(ctk.CTkFrame):
             for t in completed_tasks:
                 self._create_completed_task_card(t)
 
-            
-            
-    # -------------------------------------
-    def add_task(self):
-        title = self.title_entry.get().strip()
-        difficulty = self.diff_var.get()
-        mood = self.master.user_mood
-
-        if not title:
-            return
-
-        task = self.master.manager.create_task(title, difficulty, mood)
-
-        raw_time = self.time_entry.get().strip()
-
-        if raw_time.isdigit() and int(raw_time) > 0:
-            task.estimated_minutes = int(raw_time)
-        else:
-            task.estimated_minutes = 25  # fallback default
-
-        task.estimated_seconds = task.estimated_minutes * 60
-        task.elapsed_seconds = 0
-        task.focus_running = False
-
-        self.title_entry.delete(0, "end")
-        self.time_entry.delete(0, "end")
-
-        task.focus_running = False
-        self.start_focus(task)
-
-        self.refresh_tasks()
-        self.refresh_plant()
-
-    # -------------------------------
-# TIME-BASED GROWTH SYSTEM
-# -------------------------------
+   
 
     def start_focus(self, task):
         if task.focus_running:
@@ -646,7 +570,6 @@ class GardenPage(ctk.CTkFrame):
         self.refresh_tasks()
 
         self.after(1000, lambda: self.tick_focus(task))
-
 
     def try_grow(self, task):
         if task.estimated_seconds <= 0:
@@ -673,17 +596,8 @@ class GardenPage(ctk.CTkFrame):
         task.plant_state = stage
         self.animate_plant_growth(stage)
 
-
-
-    # -------------------------------------
-   
-
-
     def animate_plant_growth(self, stage):
-        sound = GROWTH_SOUNDS.get(stage)
-        if sound != "Blooming":
-            self.master.play_sound("grow_seed.wav")
-
+        self.master.play_sound("grow_seed.wav")
         sizes = {
             "Seed": 200,
             "Sprout": 240,
@@ -704,7 +618,6 @@ class GardenPage(ctk.CTkFrame):
             self.plant_label.configure(image=img)
             self.plant_label.image = img
 
-    # -------------------------------------
     def complete_task(self, task_id):
         task = self.master.manager.get_task_by_id(task_id)
         task.mark_completed()
@@ -716,7 +629,6 @@ class GardenPage(ctk.CTkFrame):
 
 
     def delete_task(self, task_id):
-        """Remove task completely"""
         try:
             self.master.manager.delete_task(task_id)
             if self.selected_task_id == task_id:
@@ -753,11 +665,6 @@ class GardenPage(ctk.CTkFrame):
         hint.place(relx=0.5, rely=0.9, anchor="center")
         self.after(1500, hint.destroy)
 
-
-
-# ------------------------------------------------------
-# Run App
-# ------------------------------------------------------
 if __name__ == "__main__":
     app = MindGardenApp()
     app.mainloop()
