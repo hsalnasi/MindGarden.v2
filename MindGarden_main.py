@@ -103,7 +103,6 @@ class DifficultyTask(PlantTask):
 # -----------------------------------------------------
 # Task Manager Class
 # a task has a title, difficulty, mood, status, plant state, created at, last updated and ofc and ID 
-# 
 # -----------------------------------------------------
 class TaskManager:
     def __init__(self, max_id = 0):

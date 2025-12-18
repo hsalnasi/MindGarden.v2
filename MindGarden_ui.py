@@ -358,7 +358,6 @@ class GardenPage(ctk.CTkFrame):
             text_color="#777777"
         ).pack(side="left", padx=6)
 
-        # ---------------- GROW ----------------
         grow_btn = ctk.CTkButton(
             card,
             text="Grow",
@@ -368,7 +367,6 @@ class GardenPage(ctk.CTkFrame):
         )
         grow_btn.pack(side="right", padx=4)
 
-        # ---------------- COMPLETE ----------------
         complete_btn = ctk.CTkButton(
             card,
             text="Complete",
@@ -380,7 +378,6 @@ class GardenPage(ctk.CTkFrame):
         )
         complete_btn.pack(side="right", padx=4)
 
-        # ---------------- DELETE ----------------
         delete_btn = ctk.CTkButton(
             card,
             text="🗑",
@@ -391,7 +388,6 @@ class GardenPage(ctk.CTkFrame):
             command=lambda tid=task.task_id: self.delete_task(tid)
         )
         delete_btn.pack(side="right", padx=4)
-
 
     def set_selected_task(self, task_id):
         self.selected_task_id = task_id
@@ -529,7 +525,6 @@ class GardenPage(ctk.CTkFrame):
         active_tasks = [t for t in tasks if t.status != "completed"]
         completed_tasks = [t for t in tasks if t.status == "completed"]
 
-        # ---------- ACTIVE TASKS ----------
         if active_tasks:
             ctk.CTkLabel(
                 self.task_list,
@@ -541,7 +536,6 @@ class GardenPage(ctk.CTkFrame):
             for t in active_tasks:
                 self._create_active_task_card(t)
 
-        # ---------- COMPLETED TASKS ----------
         if completed_tasks:
             ctk.CTkLabel(
                 self.task_list,
@@ -552,8 +546,6 @@ class GardenPage(ctk.CTkFrame):
 
             for t in completed_tasks:
                 self._create_completed_task_card(t)
-
-   
 
     def start_focus(self, task):
         if task.focus_running:
@@ -626,7 +618,6 @@ class GardenPage(ctk.CTkFrame):
 
         self.refresh_tasks()
         self.refresh_plant()
-
 
     def delete_task(self, task_id):
         try:
