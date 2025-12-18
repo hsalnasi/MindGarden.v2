@@ -1,4 +1,8 @@
 from datetime import datetime
+<<<<<<< HEAD
+=======
+import csv
+>>>>>>> upstream/main
 # -----------------------------------------------------
 # Custom Exception
 # -----------------------------------------------------
@@ -26,12 +30,30 @@ class Task:
         """Return simple summary of the task."""
         return f"[Task {self.task_id}] {self.title} - Status: {self.status}"
 
+<<<<<<< HEAD
+=======
+    def to_dict(self):
+        """Convert task to dictionary (useful for saving to csv)/ Haifa"""
+        return {
+            "task_id": self.task_id,
+            "title": self.title,
+            "status": self.status,
+            "created_at": self.created_at,
+            "last_updated": self.last_updated
+        }
+
+
+>>>>>>> upstream/main
 # -----------------------------------------------------
 # Child Class: PlantTask (Inherits from Task)
 # -----------------------------------------------------
 class PlantTask(Task):
     # this is a class variable. in order to access it we use : class.varname (without self) /Haifa
+<<<<<<< HEAD
     PLANT_STATES = ["Seed", "Sprout", "Growing", "Blooming"]
+=======
+    PLANT_STATES = ["Seed", "Sprout", "Growing", "Blooming", "Wilting"]
+>>>>>>> upstream/main
 
     def __init__(self, task_id, title):
         super().__init__(task_id, title)    # call the parent constructor
@@ -56,7 +78,14 @@ class PlantTask(Task):
         base_summary = super().get_summary()
         return f"{base_summary} | Plant state: {self.plant_state}"
 
+<<<<<<< HEAD
    
+=======
+    def mark_ignored(self):
+        """Turn plant state to wilting if user stops working."""
+        self.plant_state = "Wilting" # updating the plant state
+        self.update_status("ignored") # updating the task status
+>>>>>>> upstream/main
 
 class DifficultyTask(PlantTask):
     def __init__(self, task_id, title, difficulty, mood="Happy"):
@@ -64,9 +93,20 @@ class DifficultyTask(PlantTask):
         self.difficulty = difficulty # ---> Easy, Medium, Hard .
         self.mood = mood # defalut is "Happy" :> /Haifa
         self.growth_speed = {"Easy": 2, "Medium": 1, "Hard": 0.5}
+<<<<<<< HEAD
 
         self._growth_progress = 0
 
+=======
+        self.completion_reward_message = ""
+        self._growth_progress = 0
+
+    # Getter . Will be used in GUI as a loading bar or we will see ... :*)/Haifa
+    def get_growth_progress(self):
+        needed = self.growth_speed[self.difficulty]
+        return self._growth_progress, needed
+
+>>>>>>> upstream/main
     def grow_based_on_difficulty(self):
         self._growth_progress += 1
         speed = self.growth_speed[self.difficulty] # only takes the speed number needed for the plant to grow .
@@ -79,6 +119,7 @@ class DifficultyTask(PlantTask):
         self.update_status("in progress")
 
     def mark_completed(self):
+<<<<<<< HEAD
         self.status = "completed"
         self.plant_state = "Blooming"
         if self.difficulty == "Easy":
@@ -87,6 +128,19 @@ class DifficultyTask(PlantTask):
             return "Nice work! 🌿 You completed a medium task!"
         else:
             return "Amazing! 🌳 You finished a hard task!"
+=======
+        self.status = "completed" # task status 
+        self.plant_state = "Blooming" # plant status
+        self.last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        if self.difficulty == "Easy":
+            self.completion_reward_message =  "Great job! 🌱 You finished an easy task!"
+        elif self.difficulty == "Medium":
+            self.completion_reward_message =  "Nice work! 🌿 You completed a medium task!"
+        else:
+            self.completion_reward_message =  "Amazing! 🌳 You finished a hard task!"
+        return self.completion_reward_message
+>>>>>>> upstream/main
 
     # Ovverriden method . it still functions the same but with more columns /Haifa
     def to_csv_row(self):
@@ -100,14 +154,35 @@ class DifficultyTask(PlantTask):
         "created_at": self.created_at,
         "last_updated": self.last_updated
         }
+<<<<<<< HEAD
 # -----------------------------------------------------
 # Task Manager Class
 # a task has a title, difficulty, mood, status, plant state, created at, last updated and ofc and ID 
+=======
+
+# TESTUUUU 
+task  = DifficultyTask("1", "Finish Math", "Hard", "Focus")
+print(task.get_summary())
+print(task.grow_based_on_difficulty())
+print(task.mark_completed())
+print(task.get_summary())
+
+# -----------------------------------------------------
+# Task Manager Class
+# a task has a title, difficulty, mood, status, plant state, created at, last updated and ofc and ID 
+# 
+>>>>>>> upstream/main
 # -----------------------------------------------------
 class TaskManager:
     def __init__(self, max_id = 0):
         self.__tasks = []
         self.__next_task_id = max_id + 1
+<<<<<<< HEAD
+=======
+    #getters
+    def get_next_task_id(self):
+        return self.__next_task_id #return next task id
+>>>>>>> upstream/main
 
     def get_all_tasks(self):
         return self.__tasks #return all tasks
@@ -138,12 +213,23 @@ class TaskManager:
 
         raise TaskNotFoundError("Task not found.")
 
+<<<<<<< HEAD
+=======
+    def update_task_progress(self,task_id):
+        #get task and update its plant state
+        task = self.get_task_by_id(task_id)
+        task.grow_based_on_difficulty()
+        print(f"Task ID {task_id} updated: plant state = {task.plant_state}")
+        return task
+
+>>>>>>> upstream/main
     def complete_task(self, task_id):
         #mark as completed and return a reward for the user
         task = self.get_task_by_id(task_id)
         reward = task.mark_completed()
         print(reward)
         return reward
+<<<<<<< HEAD
     
     def delete_task(self, task_id):
         for i, task in enumerate(self.__tasks):
@@ -177,3 +263,36 @@ if __name__ == "__main__":
 
     print("\n=== Completing a Task ===")
     tm.complete_task(1)
+=======
+
+  
+
+# TESTU TESTU 
+print("=== Creating TaskManager ===")
+tm = TaskManager()
+
+print("\n=== Creating Tasks ===")
+t1 = tm.create_task("Study Python", "Easy")
+t2 = tm.create_task("Finish Project", "Hard", mood="Tired")
+
+print("\n=== Showing all tasks ===")
+for task in tm.get_all_tasks():
+    print(task.task_id, task.title, task.difficulty, task.plant_state)
+
+print("\n=== Updating Progress ===")
+tm.update_task_progress(1)
+tm.update_task_progress(2)
+
+print("\n=== Completing a Task ===")
+tm.complete_task(1)
+
+
+
+
+
+
+
+
+
+
+>>>>>>> upstream/main
