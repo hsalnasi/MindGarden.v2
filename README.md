@@ -1,6 +1,3 @@
 # MindGarden
-Productivty app using Tkinter (group project)
-<<<<<<< HEAD
-"# MindGarden.v2" 
-=======
->>>>>>> upstream/main
+Productivty app using Tkinter. The final project for my OOP course . 
+
